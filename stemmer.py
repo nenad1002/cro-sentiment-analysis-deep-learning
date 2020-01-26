@@ -9,6 +9,9 @@ STOP_WORDS =set([word.strip() for word in open('stop_words.txt')])
 PREDEFINED_RULES = [re.compile(r'^('+osnova+')('+nastavak+r')$') for osnova, nastavak in [e.strip().split(' ') for e in open('rules.txt', encoding='utf8')]]
 PREDEFINED_TRANSFORMATIONS = [e.strip().split('\t') for e in open('transformations.txt', encoding='utf8')]
 
+'''
+Ignore Croatian symbols as many people are not using them in informal comments/reviews.
+'''
 CROATIAN_TO_ENGLISH_SYMBOLS = {
     'š' : 's',
     'ć' : 'c',

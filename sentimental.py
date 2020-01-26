@@ -151,7 +151,8 @@ def train_model(input_data, output_data, training_data_percentage, fetch_model, 
     # Define callbacks for early stop.
     callbacks = [CustomEarlyStopping(val_acc_th=0.85, acc_th=0.85, min_epochs=20, verbose=1)] 
 
-    history = model.fit(padded_training_input, training_output, epochs=70, validation_split=0.15, verbose=2, callbacks=callbacks)
+    # The example of fitting, for about 1000 reviews, there is no need for more than 100 epochs and 15% of data can be used for validation.
+    history = model.fit(padded_training_input, training_output, epochs=100, validation_split=0.15, verbose=2, callbacks=callbacks)
 
     # Find validation accuracy values through the training, and use plot to display the graph.
     val_acc_arr = history.history['loss']
