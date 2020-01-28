@@ -2,26 +2,9 @@ import csv
 import re
 import numpy as np
 
-from sentimental import test_models, create_outputs, train_model
+from sentimental import test_models, create_outputs, train_model, predict
 from models import define_and_compile_model2
-from stemmer import has_vowel, transform, convert_to_root, remove_croatian_symbols, STOP_WORDS
-
-def process_row(row):
-    '''
-    Processes the row by stemming words.
-    '''
-    stem_row = ''
-
-    for token in re.findall(r'\w+', row, re.UNICODE):
-        token = remove_croatian_symbols(token)
-        if token.lower() in STOP_WORDS:
-            continue
-
-        # Stem the word.
-        stem_word = convert_to_root(transform(token.lower()))
-        stem_row += stem_word + ' '
-    
-    return stem_row
+from stemmer import process_row, has_vowel, transform, convert_to_root, remove_croatian_symbols, STOP_WORDS
 
 
 def main():
@@ -50,7 +33,10 @@ def main():
 
         positive_out, negative_out = create_outputs(len(stem_positive))
 
-        train_model(stem_positive + stem_negative, np.concatenate((positive_out, negative_out), axis=None), training_split=0.85, fetch_model=define_and_compile_model2, is_release=True)
+        train_model(stem_positive + stem_negative, np.concatenate((positive_out, negative_out), axis=None), training_data_percentage=0.85, fetch_model=define_and_compile_model2, is_release=True)
+
+        # Predict an example.
+        print (predict("Uzivao sam prilikom ovog smjestaja i vratiti cu se.", "trained_model_data"))
 
 
 if __name__ == "__main__":

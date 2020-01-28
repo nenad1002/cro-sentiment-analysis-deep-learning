@@ -20,6 +20,23 @@ CROATIAN_TO_ENGLISH_SYMBOLS = {
     'đ' : 'd'
 }
 
+def process_row(row):
+    '''
+    Processes the row by stemming words.
+    '''
+    stem_row = ''
+
+    for token in re.findall(r'\w+', row, re.UNICODE):
+        token = remove_croatian_symbols(token)
+        if token.lower() in STOP_WORDS:
+            continue
+
+        # Stem the word.
+        stem_word = convert_to_root(transform(token.lower()))
+        stem_row += stem_word + ' '
+    
+    return stem_row
+
 def amplify_R(niz):
     '''
     The letter R is considered to be a special kind of vowel in Croatian.

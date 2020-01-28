@@ -1,4 +1,5 @@
 # The file that contains hand-crafted models.
+# Performance results are stored to the models_metrics_results folder.
 
 import tensorflow as tf
 import tensorflow.keras as keras

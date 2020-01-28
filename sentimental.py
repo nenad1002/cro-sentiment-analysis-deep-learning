@@ -1,17 +1,21 @@
 import random
-import tensorflow as tf
-import tensorflow.keras as keras
 import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow as tf
+import tensorflow.keras as keras
+import pickle
 
 from keras.callbacks import EarlyStopping
+from keras.models import model_from_json
+
 from tensorflow.keras.preprocessing.text import one_hot
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
 
-from models import define_and_compile_model2, VOCAB_SIZE
 from embedding_generator import generate_embeddings
+from models import define_and_compile_model2, VOCAB_SIZE
+from stemmer import process_row
 
 
 '''
@@ -68,12 +72,12 @@ def test_one_model(positive_data, negative_data, training_split, fetch_model, se
     prec_arr = []
     rec_arr = []
 
-    positive_out, negative_out = self.create_outputs(len(positive_data))
+    positive_out, negative_out = create_outputs(len(positive_data))
 
     random.seed(seed_num)
 
     # Monte Carlo validation for 10 times.
-    for i in range(10):
+    for _ in range(10):
         random.shuffle(positive_data)
         random.shuffle(negative_data)
 
@@ -161,11 +165,76 @@ def train_model(input_data, output_data, training_data_percentage, fetch_model, 
     generate_embeddings(model, tokenizer)
 
     if is_release is False:
-        loss, accuracy, precision, recall = model.evaluate(padded_test_input, test_output, verbose=2)
+        _, accuracy, precision, recall = model.evaluate(padded_test_input, test_output, verbose=2)
         print(f'Accuracy: {accuracy}')
         print(f'Precision: {precision}')
         print(f'Recall: {recall}')
 
         return model, accuracy, precision, recall
 
+    save_model(model, tokenizer, 'trained_model_data')
+
     return model
+
+
+def predict(sentence, location):
+    '''
+    Predicts whether a review is positive or negative based on the model stored in the location folder.
+    '''
+
+    model, tokenizer = load_model(location)
+
+    encoded_sentence = tokenizer.texts_to_sequences([process_row(sentence)])
+
+    # Pad the sequence.
+    pad_sentence = pad_sequences(encoded_sentence, maxlen=MAX_LENGTH, padding='post')
+    
+    result = model.predict([pad_sentence])
+
+    if result >= 0.5:
+        return 'Positive'
+    else:
+        return 'Negative'
+
+
+def save_model(model, tokenizer, location):
+    '''
+    Saves the model to disk.
+    '''
+
+    model_json = model.to_json()
+
+    with open(f"{location}/model.json", "w") as json_file:
+        json_file.write(model_json)
+
+        # Serialize weights to HDF5.
+        model.save_weights(f"{location}/model.h5")
+
+        # Save tokens.
+        with open(f"{location}/tokenizer.pickle", 'wb') as handle:
+            pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def load_model(location):
+    '''
+    Loads the model from disk.
+    '''
+
+    try:
+        json_file = open(f"{location}/model.json", 'r')
+
+        loaded_model_json = json_file.read()
+        json_file.close()
+        loaded_model = tf.keras.models.model_from_json(loaded_model_json)
+
+        # Load weights into the new model.
+        loaded_model.load_weights(f"{location}/model.h5")
+
+        # Load tokens.
+        with open(f"{location}/tokenizer.pickle", 'rb') as handle:
+            tokenizer = pickle.load(handle)
+
+        return loaded_model, tokenizer
+
+    except:
+        raise Exception("There has been an error while trying to load the model.")
