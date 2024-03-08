@@ -1,3 +1,8 @@
+First check the development of my newest project:
+https://github.com/nenad1002/KajkavskiGPT
+
+Thank you!
+
 # cro-sentiment-analysis-deep-learning
 
 This repo is an on-going implementation of a research in the area of sentiment analysis of Croatian language in Python and Tensorflow with Keras. As a part of this project the sentiment analysis of the comments found on Booking.com (and similar sites) has been processed to predict whether the comments express a positive or negative review of an accomondation place.
