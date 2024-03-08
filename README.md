@@ -1,4 +1,4 @@
-First check the development of my newest project:
+First check the development of my newest LLM-related project:
 https://github.com/nenad1002/KajkavskiGPT
 
 Thank you!
